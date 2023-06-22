@@ -2,13 +2,14 @@ from rdflib import Graph
 import numpy as np
 from scipy.stats import f_oneway
 import matplotlib.pyplot as plt
+from rdflib.util import guess_format
 
 def calc_rdf_info(dataset):
     """This function calculates information about the RDF dataset"""
 
     # Loading the RDF dataset
     g = Graph()
-    g.parse(dataset, format="nt")
+    g.parse(dataset, format=guess_format(dataset))
 
     # Counting the number of assertions
     num_assertions = len(g)
