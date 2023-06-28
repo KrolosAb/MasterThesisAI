@@ -91,7 +91,7 @@ def performance_plotting():
     (The data for the other datasets can be found in results.txt)
     """
 
-    # The average performance metrics of AIFB+ per sampling strategy
+    # The average performance metrics of AIFB per sampling strategy
     accuracy = [0.71, 0.6919, 0.6836, 0.6862, 0.6807, 0.6814, 0.7124, 0.697, 0.688, 0.6878]
     precision = [0.7516, 0.5018, 0.4673, 0.4726, 0.4634, 0.4644, 0.7694, 0.696, 0.4778, 0.4744]
     f1_score = [0.72, 0.569, 0.5551, 0.5592, 0.5514, 0.5523, 0.7236, 0.6817, 0.5629, 0.5612]
@@ -116,7 +116,7 @@ def performance_plotting():
     # Setting axis labels and title
     ax.set_xlabel('Sampling Strategies')
     ax.set_ylabel('Performance Metrics')
-    ax.set_title('Performance Metrics for Different Sampling Strategies (AIFB+)')
+    ax.set_title('Performance Metrics for Different Sampling Strategies (AIFB)')
 
     ax.legend()
     plt.xticks(rotation=45)
@@ -145,7 +145,7 @@ def execution_time_plotting():
     fig, ax = plt.subplots()
 
     # Plotting the lines for each dataset
-    ax.plot(sampling_strategies, aifb, label='AIFB+')
+    ax.plot(sampling_strategies, aifb, label='AIFB')
     ax.plot(sampling_strategies, anime, label='Anime')
     ax.plot(sampling_strategies, bnb, label='BNB')
 
