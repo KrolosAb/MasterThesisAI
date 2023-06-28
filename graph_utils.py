@@ -3,6 +3,8 @@ import numpy as np
 from scipy.stats import f_oneway
 import matplotlib.pyplot as plt
 from rdflib.util import guess_format
+import networkx as nx
+import rdflib
 
 def calc_rdf_info(dataset):
     """This function calculates information about the RDF dataset"""
@@ -36,6 +38,45 @@ def calc_rdf_info(dataset):
     print("Number of entities: {}".format(num_entities))
     print("Number of literals: {}".format(num_literals))
 
+def count_nodes_edges(dataset):
+    """This function counts the number of nodes and edges of the datasets after transformation into knowledge graphs"""
+    # Parse the RDF file into a graph
+    g = rdflib.Graph()
+    g.parse(dataset, format=guess_format(dataset))
+
+    # Creating a NetworkX graph
+    G = nx.MultiDiGraph()
+
+    # Creating a node-to-index mapping
+    node_to_index = {}
+
+    # Iterating through the RDF triples
+    for i, (s, p, o) in enumerate(g):
+        if str(s) not in node_to_index:
+            node_to_index[str(s)] = len(node_to_index)
+        if str(p) not in node_to_index:
+            node_to_index[str(p)] = len(node_to_index)
+        if str(o) not in node_to_index:
+            node_to_index[str(o)] = len(node_to_index)
+
+    # Iterating through the RDF triples
+    for s, p, o in g:
+        # Adding subject and object nodes to the graph
+        G.add_node(str(s), node_type='uri')
+        if isinstance(o, rdflib.URIRef):
+            G.add_node(str(o), node_type='uri')
+        else:
+            G.add_node(str(o), node_type='literal')
+
+        # Adding predicate nodes to the graph
+        G.add_node(str(p), node_type='predicate')
+
+        # Adding edges connecting subject, predicate, and object nodes
+        G.add_edge(str(s), str(p), key=str(o), label=str(p), edge_type='subj_pred')
+        G.add_edge(str(p), str(o), key=str(o), label=str(p), edge_type='pred_obj')
+
+    print(f"Number of nodes: {G.number_of_nodes()}")
+    print(f"Number of edges: {G.number_of_edges()}")
 
 def calc_statistics(data):
     """This function calculates the average and standard deviation of the given data"""
@@ -92,10 +133,10 @@ def performance_plotting():
     """
 
     # The average performance metrics of AIFB per sampling strategy
-    accuracy = [0.71, 0.6919, 0.6836, 0.6862, 0.6807, 0.6814, 0.7124, 0.697, 0.688, 0.6878]
-    precision = [0.7516, 0.5018, 0.4673, 0.4726, 0.4634, 0.4644, 0.7694, 0.696, 0.4778, 0.4744]
-    f1_score = [0.72, 0.569, 0.5551, 0.5592, 0.5514, 0.5523, 0.7236, 0.6817, 0.5629, 0.5612]
-    roc_auc = [0.8565, 0.7459, 0.4782, 0.5396, 0.4187, 0.4324, 0.8663, 0.8707, 0.8613, 0.6395]
+    accuracy = [0.71, 0.6919, 0.6836, 0.6807, 0.6814, 0.7124, 0.6862, 0.697, 0.688, 0.6878]
+    precision = [0.7516, 0.5018, 0.4673, 0.4634, 0.4644, 0.7694, 0.4726, 0.696, 0.4778, 0.4744]
+    f1_score = [0.72, 0.569, 0.5551, 0.5514, 0.5523, 0.7236, 0.5592, 0.6817, 0.5629, 0.5612]
+    roc_auc = [0.8565, 0.7459, 0.4782, 0.4187, 0.4324, 0.8663, 0.5396, 0.8707, 0.8613, 0.6395]
 
     # The standard deviations for the average performance metrics of AIFB+ per sampling strategy
     accuracy_std = [0.0035, 0.0065, 0.0081, 0.0089, 0.0071, 0.0058, 0.0262, 0.0127, 0.011, 0.01]
@@ -103,7 +144,7 @@ def performance_plotting():
     f1_score_std = [0.0036, 0.0099, 0.0105, 0.0119, 0.0092, 0.0075, 0.0251, 0.0443, 0.0149, 0.0132]
     roc_auc_std = [0.0192, 0.2304, 0.0341, 0.2655, 0.1486, 0.0651, 0.0171, 0.0128, 0.0082, 0.195]
 
-    sampling_strategies = ['RNS', 'NTS', 'ETS', 'NTETS', 'DBS', 'DCS', 'PRS', 'NTPRS', 'ETPRS', 'NTDBS']
+    sampling_strategies = ['RNS', 'NTS', 'ETS', 'DBS', 'DCS', 'PRS', 'NTETS', 'NTPRS', 'ETPRS', 'NTDBS']
 
     fig, ax = plt.subplots()
 
@@ -125,22 +166,21 @@ def performance_plotting():
         errorbar.set_alpha(1)
 
     plt.show()
-    
 
 def execution_time_plotting():
     """This function creates a line plot of the execution time for different sampling strategies per dataset"""
     
     # The average execution times for each dataset per sampling strategy
-    aifb = [9.192, 6.326, 5.082, 6.206, 6.164, 5.138, 9.43, 8.708, 8.536, 6.736]
-    anime = [114.626, 121.908, 66.55, 91.65, 152.258, 86.854, 114.542, 130.246, 111.512, 154.51]
-    bnb = [110.744, 110.886, 126.878, 143.212, 310.814, 119.644, 125.612, 137.858, 149.886, 322.342]
+    aifb = [9.192, 6.326, 5.082, 6.164, 5.138, 9.43, 6.206, 8.708, 8.536, 6.736]
+    anime = [114.626, 121.908, 66.55, 152.258, 86.854, 114.542, 91.65, 130.246, 111.512, 154.51]
+    bnb = [110.744, 110.886, 126.878, 310.814, 119.644, 125.612, 143.212, 137.858, 149.886, 322.342]
 
     # Standard deviations for each execution time for each dataset per sampling strategy
-    aifb_std_dev = [1.0278, 1.1669, 0.2954, 1.0913, 0.643, 0.5559, 0.9733, 0.8236, 0.7912, 1.5901]
-    anime_std_dev = [21.5199, 18.9101, 3.9567, 11.1779, 18.9813, 13.8941, 6.9588, 15.965, 18.9925, 17.409]
-    bnb_std_dev = [17.9825, 21.1082, 16.3517, 32.3336, 17.5582, 15.0862, 7.6734, 28.4538, 27.6322, 14.5816]
+    aifb_std_dev = [1.0278, 1.1669, 0.2954, 0.643, 0.5559, 0.9733, 1.0913, 0.8236, 0.7912, 1.5901]
+    anime_std_dev = [21.5199, 18.9101, 3.9567, 18.9813, 13.8941, 6.9588, 11.1779, 15.965, 18.9925, 17.409]
+    bnb_std_dev = [17.9825, 21.1082, 16.3517, 17.5582, 15.0862, 7.6734, 32.3336, 28.4538, 27.6322, 14.5816]
 
-    sampling_strategies = ['RNS', 'NTS', 'ETS', 'NTETS', 'DBS', 'DCS', 'PRS', 'NTPRS', 'ETPRS', 'NTDBS']
+    sampling_strategies = ['RNS', 'NTS', 'ETS', 'DBS', 'DCS', 'PRS', 'NTETS', 'NTPRS', 'ETPRS', 'NTDBS']
 
     fig, ax = plt.subplots()
 
