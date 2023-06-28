@@ -1,4 +1,4 @@
-AIFB+ Results
+AIFB Results
 
 # Mean values
 accuracy = [0.71, 0.6919, 0.6836, 0.6862, 0.6807, 0.6814, 0.7124, 0.697, 0.688, 0.6878]
